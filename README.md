@@ -10,4 +10,4 @@ Extended code of Daniel Shiffmans boids implementeation.
 
 - [ ] add object detection/avoidance
 - [x] rewrite prototypes to classess and methods
-- [ ] adding different masses, depending on size
+- [x] adding different masses, depending on size

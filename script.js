@@ -6,7 +6,7 @@ function setup() {
     flock = new Flock();
     //Add an initial set of boids into the system
     for (let i = 0; i < 100; i++) {
-        let b = new Boid(width / 2, height / 2);
+        let b = new Boid(width / 2, height / 2, 8);
         flock.addBoid(b);
     }
 }
@@ -18,7 +18,7 @@ function draw() {
 
 // Add a new boid into the System
 function mouseDragged() {
-    flock.addBoid(new Boid(mouseX, mouseY));
+    flock.addBoid(new Boid(mouseX, mouseY, 12));
 }
 
 // The Nature of Code
@@ -54,11 +54,11 @@ class Flock {
 // Methods for Separation, Cohesion, Alignment added
 
 class Boid {
-    constructor(x, y) {
+    constructor(x, y, r) {
         this.acceleration = createVector(0, 0);
         this.velocity = createVector(random(-1, 1), random(-1, 1));
         this.position = createVector(x, y);
-        this.r = 10;
+        this.r = r;
         this.maxspeed = 3; // Maximum speed
         this.maxforce = 0.05; // Maximum steering force
         this.flap = 0;
@@ -84,8 +84,8 @@ class Boid {
         let ali = this.align(boids); // Alignment
         let coh = this.cohesion(boids); // Cohesion
         // Arbitrarily weight these forces
-        sep.mult(1.5);
-        ali.mult(1.0);
+        sep.mult(1.2);
+        ali.mult(1.3);
         coh.mult(1.0);
         // Add the force vectors to acceleration
         this.applyForce(sep);
@@ -127,7 +127,7 @@ class Boid {
 
         let speed = this.velocity.mag();
         let acc = this.acceleration.mag();
-        let flapspeed = 0.01 + acc * 3 + speed * 0.2;
+        let flapspeed = 0.01 + acc * 3 + speed * 0.2 * (7 / this.r);
 
         this.flap += flapspeed * 0.5;
         this.la = (sin(this.flap) + 1) / 2;
@@ -156,12 +156,13 @@ class Boid {
     // Separation
     // Method checks for nearby boids and steers away
     separate(boids) {
-        let desiredseparation = 30;
         let steer = createVector(0, 0);
         let count = 0;
         // For every boid in the system, check if it's too close
         for (let i = 0; i < boids.length; i++) {
             let d = p5.Vector.dist(this.position, boids[i].position);
+            let desiredseparation = 1.8 * this.r + 1.8 * boids[i].r;
+
             // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
             if ((d > 0) && (d < desiredseparation)) {
                 // Calculate vector pointing away from neighbor
@@ -191,10 +192,11 @@ class Boid {
     // Alignment
     // For every nearby boid in the system, calculate the average velocity
     align(boids) {
-        let neighbordist = 50;
         let sum = createVector(0, 0);
         let count = 0;
         for (let i = 0; i < boids.length; i++) {
+            let neighbordist = 2.5 * this.r + 2.5 * boids[i].r;
+
             let d = p5.Vector.dist(this.position, boids[i].position);
             if ((d > 0) && (d < neighbordist)) {
                 sum.add(boids[i].velocity);
@@ -216,10 +218,11 @@ class Boid {
     // Cohesion
     // For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
     cohesion(boids) {
-        let neighbordist = 50;
         let sum = createVector(0, 0); // Start with empty vector to accumulate all locations
         let count = 0;
         for (let i = 0; i < boids.length; i++) {
+            let neighbordist = 2.5 * this.r + 2.5 * boids[i].r;
+
             let d = p5.Vector.dist(this.position, boids[i].position);
             if ((d > 0) && (d < neighbordist)) {
                 sum.add(boids[i].position); // Add location
