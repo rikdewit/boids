@@ -2,10 +2,9 @@ let flock;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    createP("Drag the mouse to generate new boids.");
 
     flock = new Flock();
-    // Add an initial set of boids into the system
+    //Add an initial set of boids into the system
     for (let i = 0; i < 100; i++) {
         let b = new Boid(width / 2, height / 2);
         flock.addBoid(b);
@@ -58,6 +57,7 @@ function Boid(x, y) {
     this.r = 10;
     this.maxspeed = 3; // Maximum speed
     this.maxforce = 0.05; // Maximum steering force
+    this.flap = 0;
 }
 
 Boid.prototype.run = function(boids) {
@@ -65,6 +65,8 @@ Boid.prototype.run = function(boids) {
     this.update();
     this.borders();
     this.render();
+    this.acceleration.mult(0);
+
 }
 
 Boid.prototype.applyForce = function(force) {
@@ -95,7 +97,6 @@ Boid.prototype.update = function() {
     this.velocity.limit(this.maxspeed);
     this.position.add(this.velocity);
     // Reset accelertion to 0 each cycle
-    this.acceleration.mult(0);
 }
 
 // A method that calculates and applies a steering force towards a target
@@ -120,18 +121,24 @@ Boid.prototype.render = function() {
     translate(this.position.x, this.position.y);
     rotate(theta);
 
+    let speed = this.velocity.mag();
+    let acc = this.acceleration.mag();
+    let flapspeed = 0.01 + acc * 3 + speed * 0.2;
 
-    let la = (sin((this.velocity.mag() * 0.25 + 0.6) * frameCount / 6) + 1) / 2;
-    let ra = (sin(radians(200) + (this.velocity.mag() * 0.25 + 0.6) * frameCount / 6) + 1) / 2;
-
-
+    this.flap += flapspeed * 0.5;
+    this.la = (sin(this.flap) + 1) / 2;
+    this.ra = (sin(radians(200) + this.flap) + 1) / 2;
 
 
     stroke(255);
     strokeWeight(5);
-    line(0, 0, -this.r / 2 + (la * this.r / 2) * 1.4, -this.r + (la * this.r / 2) * 1.6);
-    line(0, 0, this.r / 2 - (ra * this.r / 2) * 2, +this.r - (ra * this.r / 2) * 1.8);
+    line(0, 0, -this.r / 2 + (this.la * this.r / 2) * 1.4, -this.r + (this.la * this.r / 2) * 1.6);
+    line(0, 0, this.r / 2 - (this.ra * this.r / 2) * 2, +this.r - (this.ra * this.r / 2) * 1.8);
     pop();
+
+
+
+
 }
 
 // Wraparound
