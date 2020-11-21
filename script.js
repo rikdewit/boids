@@ -1,4 +1,5 @@
 let flock;
+let objects = [];
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -9,16 +10,83 @@ function setup() {
         let b = new Boid(width / 2, height / 2, 8);
         flock.addBoid(b);
     }
+
+    let object = {
+        x1: width / 2,
+        y1: height / 2,
+        x2: width / 2 + 200,
+        y2: height / 2
+    }
+
+    let object1 = {
+        x1: width / 2 + 100,
+        y1: height / 2 + 200,
+        x2: width / 3,
+        y2: height / 3
+    }
+    objects.push(object);
+    objects.push(object1);
+
 }
 
 function draw() {
     background(51);
     flock.run();
+
+    for (let i = 0; i < objects.length; i++) {
+        strokeWeight(4);
+        line(objects[i].x1, objects[i].y1, objects[i].x2, objects[i].y2);
+
+        let a = createVector(objects[i].x1, objects[i].y1);
+        let b = createVector(objects[i].x2, objects[i].y2)
+        let mousevect = createVector(mouseX, mouseY);
+
+        let { distance, point } = distLineToPoint(a, b, mousevect);
+        console.log(distance);
+        line(mousevect.x, mousevect.y, point.x, point.y);
+
+    }
 }
 
 // Add a new boid into the System
 function mouseDragged() {
     flock.addBoid(new Boid(mouseX, mouseY, 12));
+}
+
+// calculate the squared distance of a point P to a line segment A-B
+// and return the nearest line point S
+function distLineToPoint(A, B, P) {
+
+    let distance;
+    let S = createVector();
+
+    let vx = P.x - A.x,
+        vy = P.y - A.y; // v = A->P
+    let ux = B.x - A.x,
+        uy = B.y - A.y; // u = A->B
+    let det = vx * ux + vy * uy;
+
+    if (det <= 0) { // its outside the line segment near A
+        S.set(A);
+        distance = vx * vx + vy * vy;
+    } else {
+        let len = ux * ux + uy * uy; // len = u^2
+        if (det >= len) { // its outside the line segment near B
+            S.set(B);
+            distance = sq(B.x - P.x) + sq(B.y - P.y);
+        } else {
+            // its near line segment between A and B
+            let ex = ux / sqrt(len); // e = u / |u^2|
+            let ey = uy / sqrt(len);
+            let f = ex * vx + ey * vy; // f = e . v
+            S.x = A.x + f * ex; // S = A + f * e
+            S.y = A.y + f * ey;
+
+            distance = sq(ux * vy - uy * vx) / len; // (u X v)^2 / len
+        }
+    }
+    return { distance: sqrt(distance), point: S }
+
 }
 
 // The Nature of Code
