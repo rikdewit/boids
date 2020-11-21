@@ -6,23 +6,19 @@ function setup() {
 
     flock = new Flock();
     //Add an initial set of boids into the system
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
         let b = new Boid(width / 2, height / 2, 8);
         flock.addBoid(b);
     }
 
     let object = {
-        x1: width / 2,
-        y1: height / 2,
-        x2: width / 2 + 200,
-        y2: height / 2
+        a: createVector(width / 2, height / 2),
+        b: createVector(width / 2 + 200, height / 2)
     }
 
     let object1 = {
-        x1: width / 2 + 100,
-        y1: height / 2 + 200,
-        x2: width / 3,
-        y2: height / 3
+        a: createVector(width / 3, height / 2 + 200),
+        b: createVector(width / 3, height / 3),
     }
     objects.push(object);
     objects.push(object1);
@@ -35,15 +31,7 @@ function draw() {
 
     for (let i = 0; i < objects.length; i++) {
         strokeWeight(4);
-        line(objects[i].x1, objects[i].y1, objects[i].x2, objects[i].y2);
-
-        let a = createVector(objects[i].x1, objects[i].y1);
-        let b = createVector(objects[i].x2, objects[i].y2)
-        let mousevect = createVector(mouseX, mouseY);
-
-        let { distance, point } = distLineToPoint(a, b, mousevect);
-        console.log(distance);
-        line(mousevect.x, mousevect.y, point.x, point.y);
+        line(objects[i].a.x, objects[i].a.y, objects[i].b.x, objects[i].b.y);
 
     }
 }
@@ -151,14 +139,57 @@ class Boid {
         let sep = this.separate(boids); // Separation
         let ali = this.align(boids); // Alignment
         let coh = this.cohesion(boids); // Cohesion
+        let avo = this.avoidObjects(objects);
+        //onsole.log(avo);
         // Arbitrarily weight these forces
         sep.mult(1.2);
         ali.mult(1.3);
         coh.mult(1.0);
+        avo.mult(2.0);
         // Add the force vectors to acceleration
         this.applyForce(sep);
         this.applyForce(ali);
         this.applyForce(coh);
+        this.applyForce(avo);
+
+    }
+
+    avoidObjects(objects) {
+        let steer = createVector(0, 0);
+        let count = 0;
+
+        for (let i = 0; i < objects.length; i++) {
+            let { distance, point } = distLineToPoint(objects[i].a, objects[i].b, this.position);
+            let desiredseparation = 5 * this.r;
+            console.log(distance);
+
+
+
+            // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
+            if ((distance > 0) && (distance < desiredseparation)) {
+                // Calculate vector pointing away from neighbor
+                let diff = p5.Vector.sub(this.position, point);
+                diff.normalize();
+                diff.div(distance); // Weight by distance
+                steer.add(diff);
+                count++; // Keep track of how many
+            }
+        }
+        // Average -- divide by how many
+        if (count > 0) {
+            steer.div(count);
+        }
+
+        // As long as the vector is greater than 0
+        if (steer.mag() > 0) {
+            // Implement Reynolds: Steering = Desired - Velocity
+            steer.normalize();
+            steer.mult(this.maxspeed);
+            steer.sub(this.velocity);
+            steer.limit(this.maxforce);
+        }
+        return steer;
+
     }
 
     // Method to update location
