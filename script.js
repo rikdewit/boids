@@ -12,16 +12,28 @@ function setup() {
     }
 
     let object = {
-        a: createVector(width / 2, height / 2),
-        b: createVector(width / 2 + 200, height / 2)
+        a: createVector(0, height - 20),
+        b: createVector(width / 2, height - 100)
     }
 
     let object1 = {
-        a: createVector(width / 3, height / 2 + 200),
-        b: createVector(width / 3, height / 3),
+        a: createVector(width / 2, height - 100),
+        b: createVector(width, height - 20),
+    }
+    let object2 = {
+        a: createVector(0, height),
+        b: createVector(width, height)
+    }
+    let object3 = {
+        a: createVector(0, 0),
+        b: createVector(width, 0)
     }
     objects.push(object);
     objects.push(object1);
+    objects.push(object2);
+    // objects.push(object3);
+
+
 
 }
 
@@ -32,6 +44,11 @@ function draw() {
     for (let i = 0; i < objects.length; i++) {
         strokeWeight(4);
         line(objects[i].a.x, objects[i].a.y, objects[i].b.x, objects[i].b.y);
+
+        // let mousevect = createVector(mouseX, mouseY);
+
+        // let { distance, point } = distLineToPoint(objects[i].a, objects[i].b, mousevect);
+        // line(mousevect.x, mousevect.y, point.x, point.y);
 
     }
 }
@@ -160,7 +177,7 @@ class Boid {
 
         for (let i = 0; i < objects.length; i++) {
             let { distance, point } = distLineToPoint(objects[i].a, objects[i].b, this.position);
-            let desiredseparation = 5 * this.r;
+            let desiredseparation = 10 * this.r;
             console.log(distance);
 
 
@@ -170,7 +187,7 @@ class Boid {
                 // Calculate vector pointing away from neighbor
                 let diff = p5.Vector.sub(this.position, point);
                 diff.normalize();
-                diff.div(distance); // Weight by distance
+                diff.div(distance * 8); // Weight by distance
                 steer.add(diff);
                 count++; // Keep track of how many
             }
@@ -260,7 +277,7 @@ class Boid {
         // For every boid in the system, check if it's too close
         for (let i = 0; i < boids.length; i++) {
             let d = p5.Vector.dist(this.position, boids[i].position);
-            let desiredseparation = 1.8 * this.r + 1.8 * boids[i].r;
+            let desiredseparation = 3 + 1.8 * this.r + 1.8 * boids[i].r;
 
             // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
             if ((d > 0) && (d < desiredseparation)) {
