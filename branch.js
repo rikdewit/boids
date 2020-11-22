@@ -11,13 +11,13 @@ class Branch {
         if (this.length > 15) {
             new Branch(this.xe, this.ye, this.length * 0.76 * random(0.8, 1.2), move * this.dir + offa + random(-15, 15), offa, move);
             new Branch(this.xe, this.ye, this.length * 0.76 * random(0.8, 1.2), move * this.dir - offa + random(-15, 15), offa, move);
-            if (this.length > 70) {
-                let object = {
-                    a: createVector(this.x, this.y),
-                    b: createVector(this.xe, this.ye)
-                }
-                objects.push(object)
-            }
+            // if (this.length > 70) {
+            //     let object = {
+            //         a: createVector(this.x, this.y),
+            //         b: createVector(this.xe, this.ye)
+            //     }
+            //     objects.push(object)
+            // }
         }
         this.draw();
     }

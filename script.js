@@ -66,7 +66,7 @@ function draw() {
     // }
 
 
-    objects = [];
+    // objects = [];
 }
 
 // Add a new boid into the System
